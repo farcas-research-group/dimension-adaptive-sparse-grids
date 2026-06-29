@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class SpectralError(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tol, init_multiindex, max_level):
 		
 		self._dim 				= dim
@@ -26,6 +28,7 @@ class SpectralError(DimensionAdaptivity):
 
 		self._stop_adaption = False
 
+	@profile
 	def _get_norm_delta(self, delta_coeff):
 
 		norm = 0.
@@ -39,12 +42,14 @@ class SpectralError(DimensionAdaptivity):
 
 		return norm
 
+	@profile
 	def _get_local_error_idicator(self, delta_coeff):
 		
 		local_error = self._get_norm_delta(delta_coeff)
 
 		return local_error
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -54,6 +59,7 @@ class SpectralError(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:
@@ -62,6 +68,7 @@ class SpectralError(DimensionAdaptivity):
 
 		input_file.close()
 
+	@profile
 	def init_adaption(self, init_delta, init_coeff):
 
 		self._key_O 								= -1
@@ -76,6 +83,7 @@ class SpectralError(DimensionAdaptivity):
 
 		self._multiindex_set.append(self._init_multiindex)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		local_multiindices = []
@@ -104,6 +112,7 @@ class SpectralError(DimensionAdaptivity):
 
 		return local_multiindices
 
+	@profile
 	def do_one_adaption_step_postproc(self, curr_deltas, curr_coeffs):
 
 		for delta_level, delta_coeff in zip(curr_deltas, curr_coeffs):
@@ -114,6 +123,7 @@ class SpectralError(DimensionAdaptivity):
 			self._approx 	+= delta_level
 			self._eta 		+= local_error_indicator
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)

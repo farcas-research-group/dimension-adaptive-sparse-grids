@@ -1,7 +1,10 @@
 from .onedim import *
 from .abstract_operation import *
+from line_profiler import profile
 
 class Quadrature(AbstractOperation):
+	
+	@profile
 	def __init__(self, dim, left_bounds, right_bounds, weights, all_grid_points_1D):
 		
 		self._dim 			= dim
@@ -18,6 +21,7 @@ class Quadrature(AbstractOperation):
 
 		self._all_grid_points_1D = all_grid_points_1D
 
+	@profile
 	def _eval_operation_fg(self, curr_func_evals, multiindex):
 
 		quad_fg 	 		= 0.
@@ -38,6 +42,7 @@ class Quadrature(AbstractOperation):
 
 		return quad_fg
 
+	@profile
 	def eval_operation_delta(self, curr_multiindex, multiindex_set):
 
 		quad_delta = 0.
@@ -56,6 +61,7 @@ class Quadrature(AbstractOperation):
 
 		return quad_delta	
 
+	@profile
 	def eval_operation_sg(self, multiindex_set):
 
 		quad_sg = 0.

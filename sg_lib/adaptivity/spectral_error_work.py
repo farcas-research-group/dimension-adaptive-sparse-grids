@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class SpectralErrorWork(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tol, init_multiindex, max_level, level_to_nodes):
 		
 		self._dim 				= dim
@@ -26,6 +28,7 @@ class SpectralErrorWork(DimensionAdaptivity):
 		self._local_basis_global 	= None
 		self._local_basis_local 	= OrderedDict()
 
+	@profile
 	def _get_norm_delta(self, delta_coeff):
 
 		norm = 0.
@@ -39,12 +42,14 @@ class SpectralErrorWork(DimensionAdaptivity):
 
 		return norm
 
+	@profile
 	def _get_local_error_idicator(self, delta_coeff, no_points):
 		
 		local_error = self._get_norm_delta(delta_coeff)/no_points
 
 		return local_error
 
+	@profile
 	def init_adaption(self, init_coeff, init_no_points):
 
 		self._key_O 								= -1
@@ -61,6 +66,7 @@ class SpectralErrorWork(DimensionAdaptivity):
 		self._local_basis_local[repr(self._init_multiindex)] 	= self._get_local_hierarchical_basis(self._init_multiindex)
 		self._local_basis_global 								= self._get_local_hierarchical_basis(self._init_multiindex)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		local_multiindices = []
@@ -93,6 +99,7 @@ class SpectralErrorWork(DimensionAdaptivity):
 
 		return local_multiindices
 
+	@profile
 	def do_one_adaption_step_postproc(self, curr_coeffs, no_points):
 
 		for no_points_level, delta_coeff in zip(no_points, curr_coeffs):
@@ -102,12 +109,14 @@ class SpectralErrorWork(DimensionAdaptivity):
 
 			self._eta += local_error_indicator
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
 		if len(list(self._A.values())) == 0 or self._eta <= self._tol or max_level >= self._max_level:
 			self._stop_adaption = True
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -117,6 +126,7 @@ class SpectralErrorWork(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:

@@ -1,8 +1,11 @@
 from .onedim import *
 from .abstract_operation import *
 from ast import literal_eval
+from line_profiler import profile
 
 class InterpolationToSpectral(AbstractOperation):
+	
+	@profile
 	def __init__(self, dim, linear_growth_factor, left_bounds, right_bounds, weights, max_level, grid_obj):
 		
 		self._dim 					= dim
@@ -29,22 +32,25 @@ class InterpolationToSpectral(AbstractOperation):
 			temp, _ = grid_obj.get_1D_points(max_level, left_bounds[d], right_bounds[d], weights[d])
 			self._all_grid_points_1D.append(temp)
 
-	
+	@profile
 	@property
 	def local_basis(self):
 
 	    return self.__local_basis
 
+	@profile
 	@property
 	def global_basis(self):
 
 	    return self.__global_basis
 
+	@profile
 	@property
 	def all_sg_points_LUT(self):
 
 	    return self._all_sg_points_LUT
 
+	@profile
 	def __eval_ND_orth_poly(self, degs, x):
 
 		poly_eval = 1.
@@ -53,6 +59,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return poly_eval
 
+	@profile
 	def __get_no_1D_grid_points(self, level):
 
 		no_points = 0
@@ -72,6 +79,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return no_points
 
+	@profile
 	def __get_orth_poly_basis_local(self, multiindex):
 
 		degrees_all = []
@@ -90,7 +98,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return tensorized_degrees
 
-
+	@profile
 	def __get_orth_poly_basis_global(self, multiindex_set):
 
 		max_level_deg 			= self.__get_no_1D_grid_points(np.max(multiindex_set)) - 1
@@ -98,6 +106,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return orth_poly_basis_global
 
+	@profile
 	def get_global_basis(self, multiindex_set):
 
 		max_level_deg 			= self.__get_no_1D_grid_points(np.max(multiindex_set)) - 1
@@ -134,6 +143,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 	#  	return orth_poly_basis_global
 
+	@profile
 	def __get_orth_poly_basis_active_set(self, active_set):
 
 		active_set_basis = []
@@ -149,6 +159,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return active_set_basis
 
+	@profile
 	def __get_spectral_coeff_local_dict(self, func_evals, multiindex, tensorized_degrees):
 
 		spectral_coeff_fg = self.__get_spectral_coeff_local(func_evals, multiindex)
@@ -159,6 +170,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return spectral_coeff_dict
 
+	@profile
 	def __get_spectral_coeff_global(self, func_evals, multiindex, orth_poly_basis):
 
 		spectral_coeff 			= np.zeros(len(orth_poly_basis))
@@ -177,6 +189,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return spectral_coeff
 
+	@profile
 	def __get_spectral_coeff_delta_dict(self, curr_multiindex, multiindex_set):
 		
 		spectral_coeff_delta 	= self.get_spectral_coeff_delta(curr_multiindex)
@@ -188,6 +201,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return spectral_coeff_dict
 
+	@profile
 	def __get_spectral_coeff_active_set(self, curr_multiindex, multiindex_set, orth_poly_basis):
 
 		spectral_coeff 			= np.zeros(len(orth_poly_basis))
@@ -231,7 +245,7 @@ class InterpolationToSpectral(AbstractOperation):
 	# 		interp_fg += tensorized_basis_val[i]*curr_func_evals[i]
 
 	# 	return interp_fg
-
+	@profile
 	def _eval_operation_fg(self, curr_func_evals, multiindex, x):
 
 		interp_fg 	 	= 0.
@@ -259,6 +273,7 @@ class InterpolationToSpectral(AbstractOperation):
 		return interp_fg
 
 	# map interpolation to spectral projection
+	@profile
 	def __get_spectral_coeff_local(self, curr_func_evals, multiindex):
 
 		orth_multiindex_degs 	= self.__get_orth_poly_basis_local(multiindex)
@@ -280,11 +295,13 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return spectral_coeff_fg
 
+	@profile
 	def get_local_global_basis(self, adaptivity_obj):
 
 		self.__local_basis 	= adaptivity_obj.local_basis_local
 		self.__global_basis = adaptivity_obj.local_basis_global
 
+	@profile
 	def get_spectral_coeff_delta(self, curr_multiindex):
 		
 		orth_poly_basis_local 	= np.array(self.__get_orth_poly_basis_local(curr_multiindex), dtype=int)
@@ -306,6 +323,7 @@ class InterpolationToSpectral(AbstractOperation):
 			
 		return spectral_coeff_delta
 
+	@profile
 	def get_spectral_coeff_sg(self, multiindex_set):
 
 		orth_poly_basis_global 	= self.__get_orth_poly_basis_global(multiindex_set)
@@ -328,6 +346,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return spectral_coeff, orth_poly_basis_global
 
+	@profile
 	def eval_operation_delta(self, curr_multiindex, multiindex_set, x):
 
 		interp_delta = 0.
@@ -346,6 +365,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return interp_delta
 
+	@profile
 	def eval_operation_sg(self, multiindex_set, x):
 
 		interp_sg = 0.
@@ -356,6 +376,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return interp_sg
 
+	@profile
 	def eval_operation_sg_ct(self, func_evals, signs, multiindex_set, x):
 
 		interp_sg = 0.
@@ -366,18 +387,21 @@ class InterpolationToSpectral(AbstractOperation):
 			
 		return interp_sg
 
+	@profile
 	def get_mean(self, spectral_coeff):
 		
 		mean = spectral_coeff[0]
 
 		return mean
 
+	@profile
 	def get_variance(self, spectral_coeff):
 		
 		var = np.sum([spectral_coeff[i]**2 for i in range(1, len(spectral_coeff))])
 
 		return var
 
+	@profile
 	def get_multiindex_contrib_all_dir(self, multiindex_bin, multiindex):
 		
 		multiindex_dna 			= np.zeros(2**self._dim - 1, dtype=int)
@@ -440,6 +464,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return multiindex_dna
 
+	@profile
 	def get_directional_var_active_set(self, multiindex_set, active_set):
 		
 		directional_var = np.zeros(self._dim)
@@ -462,6 +487,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return directional_var
 
+	@profile
 	def get_local_var_level_active_set(self, global_multiindex_set, multiindex):
 		
 		directional_var = np.zeros(self._dim + 1)
@@ -485,6 +511,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return directional_var
 
+	@profile
 	def get_local_var_level_active_set_all(self, multiindex_bin, global_multiindex_set, multiindex):
 		
 		directional_var_all = np.zeros(2**self._dim - 1)
@@ -509,6 +536,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return directional_var_all
 
+	@profile
 	def get_local_total_var_all(self, multiindex):
 		
 		directional_var_all = np.zeros(self._dim)
@@ -529,6 +557,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return directional_var_all
 
+	@profile
 	def get_total_var_level_active_set(self, global_multiindex_set, multiindex):
 		
 		spectral_coeff_local = self.get_spectral_coeff_delta(multiindex)
@@ -537,6 +566,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return total_var_level
 
+	@profile
 	def get_all_dir_var_multiindex(self, multiindex_bin, spectral_coeff, multiindex):
 		
 		all_dir_var_multiindex = np.zeros(2**self._dim - 1)
@@ -557,6 +587,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return all_dir_var_multiindex
 
+	@profile
 	def get_first_order_sobol_indices(self, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(self._dim)
@@ -575,6 +606,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return sobol_indices
 
+	@profile
 	def get_total_sobol_indices(self, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(self._dim)
@@ -593,6 +625,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return sobol_indices
 
+	@profile
 	def get_all_sobol_indices(self, multiindex_bin, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(2**self._dim - 1)
@@ -615,6 +648,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 		return sobol_indices
 
+	@profile
 	def serialize_results(self, E, Var, Sobol_indices, serialization_file):
 	    
 	    with open(serialization_file, "wb") as output_file:
@@ -623,6 +657,7 @@ class InterpolationToSpectral(AbstractOperation):
 
 	    output_file.close()
 
+	@profile
 	def unserialize_results(self, serialization_file):
 
 	    with open(serialization_file, "rb") as input_file:

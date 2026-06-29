@@ -1,8 +1,11 @@
 from .onedim import *
 from .abstract_operation import *
 from ast import literal_eval
+from line_profiler import profile
 
 class SpectralProjection(AbstractOperation):
+	
+	@profile
 	def __init__(self, dim, linear_growth_factor, left_bounds, right_bounds, weights, max_level, grid_obj):
 		
 		self._dim 			= dim
@@ -23,7 +26,7 @@ class SpectralProjection(AbstractOperation):
 
 		self._all_grid_points_1D, surplus_points_1D = grid_obj.get_1D_points(max_level, left_bounds[0], right_bounds[0], weights[0])
 
-
+	@profile
 	def __get_no_1D_grid_points(self, level):
 
 		no_points = 0
@@ -43,6 +46,7 @@ class SpectralProjection(AbstractOperation):
 
 		return no_points
 
+	@profile
 	def __get_orth_poly_basis_local(self, multiindex):
 
 		degrees_all = []
@@ -61,14 +65,15 @@ class SpectralProjection(AbstractOperation):
 
 		return tensorized_degrees
 
-
+	@profile
 	def __get_orth_poly_basis_global(self, multiindex_set):
 
 		max_level_deg 			= (self.__get_no_1D_grid_points(np.max(multiindex_set)) - 1)/2
-	 	orth_poly_basis_global 	= Multiindex(self._dim).get_poly_mindex(max_level_deg)
+		orth_poly_basis_global 	= Multiindex(self._dim).get_poly_mindex(max_level_deg)
 
-	 	return orth_poly_basis_global
+		return orth_poly_basis_global
 
+	@profile
 	def __get_orth_poly_basis_active_set(self, active_set):
 
 		active_set_basis = []
@@ -84,6 +89,7 @@ class SpectralProjection(AbstractOperation):
 
 		return active_set_basis
 
+	@profile
 	def __get_spectral_coeff_local(self, func_evals, multiindex):
 
 		orth_poly_all 		= []
@@ -122,6 +128,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_coeff_fg
 
+	@profile
 	def __get_spectral_coeff_local_dict(self, func_evals, multiindex, tensorized_degrees):
 
 		spectral_coeff_fg = self.__get_spectral_coeff_local(func_evals, multiindex)
@@ -132,6 +139,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_coeff_dict
 
+	@profile
 	def __get_spectral_coeff_global(self, func_evals, multiindex, orth_poly_basis):
 
 		spectral_coeff 			= np.zeros(len(orth_poly_basis))
@@ -150,6 +158,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_coeff
 
+	@profile
 	def __get_spectral_coeff_delta_dict(self, curr_multiindex, multiindex_set):
 		
 		spectral_coeff_delta 	= self.get_spectral_coeff_delta(curr_multiindex, multiindex_set)
@@ -161,6 +170,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_coeff_dict
 
+	@profile
 	def __get_spectral_coeff_active_set(self, curr_multiindex, multiindex_set, orth_poly_basis):
 
 		spectral_coeff 			= np.zeros(len(orth_poly_basis))
@@ -176,6 +186,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_coeff
 
+	@profile
 	def _eval_operation_fg(self, curr_func_evals, multiindex, x):
 		
 		spectral_fg = 0.
@@ -200,11 +211,13 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_fg
 
+	@profile
 	def get_local_global_basis(self, adaptivity_obj):
 
 		self.__local_basis 	= adaptivity_obj.local_basis_local
 		self.__global_basis = adaptivity_obj.local_basis_global
 
+	@profile
 	def get_spectral_coeff_delta(self, curr_multiindex):
 		
 		orth_poly_basis_local 	= np.array(self.__get_orth_poly_basis_local(curr_multiindex), dtype=int)
@@ -226,6 +239,7 @@ class SpectralProjection(AbstractOperation):
 			
 		return spectral_coeff_delta			
 
+	@profile
 	def get_spectral_coeff_sg(self, multiindex_set):
 
 		orth_poly_basis_global 	= self.__get_orth_poly_basis_global(multiindex_set)
@@ -247,7 +261,8 @@ class SpectralProjection(AbstractOperation):
 				spectral_coeff 		+= sign*curr_spectral_coeff
 
 		return spectral_coeff
-		
+	
+	@profile
 	def eval_operation_delta(self, curr_multiindex, multiindex_set, x):
 		
 		spectral_delta = 0.
@@ -266,6 +281,7 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_delta
 
+	@profile
 	def eval_operation_sg(self, multiindex_set, x):
 
 		spectral_sg = 0.
@@ -276,18 +292,21 @@ class SpectralProjection(AbstractOperation):
 
 		return spectral_sg
 
+	@profile
 	def get_mean(self, spectral_coeff):
 		
 		mean = spectral_coeff[0]
 
 		return mean
 
+	@profile
 	def get_variance(self, spectral_coeff):
 		
 		var = np.sum([spectral_coeff[i]**2 for i in range(1, len(spectral_coeff))])
 
 		return var
 
+	@profile
 	def get_multiindex_contrib_all_dir(self, multiindex_bin, multiindex):
 		
 		multiindex_dna 			= np.zeros(2**self._dim - 1, dtype=int)
@@ -312,6 +331,7 @@ class SpectralProjection(AbstractOperation):
 
 		return multiindex_dna
 
+	@profile
 	def get_directional_var_active_set(self, global_multiindex_set, active_set):
 		
 		directional_var = np.zeros(self._dim)
@@ -330,10 +350,11 @@ class SpectralProjection(AbstractOperation):
 				if orth_poly_basis_active[i][d] != 0:
 					mindex.append(i)
 
- 			directional_var[d] = np.sum([spectral_coeff[j]**2 for j in mindex])
+			directional_var[d] = np.sum([spectral_coeff[j]**2 for j in mindex])
 
 		return directional_var
 
+	@profile
 	def get_local_var_level_active_set(self, global_multiindex_set, multiindex):
 		
 		directional_var = np.zeros(self._dim + 1)
@@ -351,12 +372,13 @@ class SpectralProjection(AbstractOperation):
 				elif orth_poly_basis_local[i][d] != 0 and np.count_nonzero(orth_poly_basis_local[i]) >= 2:
 					mindex_interact.append(i)
 
- 			directional_var[d] = np.sum([spectral_coeff_local[j]**2 for j in mindex_main])
+			directional_var[d] = np.sum([spectral_coeff_local[j]**2 for j in mindex_main])
 
- 		directional_var[self._dim] = np.sum([spectral_coeff_local[j]**2 for j in mindex_interact])
+		directional_var[self._dim] = np.sum([spectral_coeff_local[j]**2 for j in mindex_interact])
 
 		return directional_var
 
+	@profile
 	def get_local_total_var_all(self, multiindex):
 		
 		directional_var_all = np.zeros(self._dim)
@@ -373,10 +395,11 @@ class SpectralProjection(AbstractOperation):
 				if orth_poly_basis_local[i][d] != 0:
 					mindex.append(i)
 
- 			directional_var_all[d] = np.sum([spectral_coeff_local[j]**2 for j in mindex])
+			directional_var_all[d] = np.sum([spectral_coeff_local[j]**2 for j in mindex])
 
 		return directional_var_all
 
+	@profile
 	def get_local_var_level_active_set_all(self, multiindex_bin, global_multiindex_set, multiindex):
 		
 		directional_var_all = np.zeros(2**self._dim - 1)
@@ -401,6 +424,7 @@ class SpectralProjection(AbstractOperation):
 
 		return directional_var_all
 
+	@profile
 	def get_total_var_level_active_set(self, global_multiindex_set, multiindex):
 		
 		spectral_coeff_local = self.get_spectral_coeff_delta(multiindex, global_multiindex_set)
@@ -409,6 +433,7 @@ class SpectralProjection(AbstractOperation):
 
 		return total_var_level
 
+	@profile
 	def get_all_dir_var_multiindex(self, multiindex_bin, spectral_coeff, multiindex):
 		
 		all_dir_var_multiindex = np.zeros(2**self._dim - 1)
@@ -429,6 +454,7 @@ class SpectralProjection(AbstractOperation):
 
 		return all_dir_var_multiindex
 
+	@profile
 	def get_first_order_sobol_indices(self, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(self._dim)
@@ -443,10 +469,11 @@ class SpectralProjection(AbstractOperation):
 				if orth_poly_basis_global[i][d] != 0 and np.count_nonzero(orth_poly_basis_global[i]) == 1:
 					mindex.append(i)
 
- 			sobol_indices[d] = np.sum([spectral_coeff[j]**2 for j in mindex])/Var
+			sobol_indices[d] = np.sum([spectral_coeff[j]**2 for j in mindex])/Var
 
 		return sobol_indices
 
+	@profile
 	def get_total_sobol_indices(self, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(self._dim)
@@ -461,10 +488,11 @@ class SpectralProjection(AbstractOperation):
 				if orth_poly_basis_global[i][d] != 0:
 					mindex.append(i)
 
- 			sobol_indices[d] = np.sum([spectral_coeff[j]**2 for j in mindex])/Var
+			sobol_indices[d] = np.sum([spectral_coeff[j]**2 for j in mindex])/Var
 
 		return sobol_indices
 
+	@profile
 	def get_all_sobol_indices(self, multiindex_bin, spectral_coeff, multiindex_set):
 		
 		sobol_indices = np.zeros(2**self._dim - 1)
@@ -487,14 +515,16 @@ class SpectralProjection(AbstractOperation):
 
 		return sobol_indices
 
+	@profile
 	def serialize_results(self, E, Var, Sobol_indices, serialization_file):
 	    
-	    with open(serialization_file, "wb") as output_file:
-	    	data = [E, Var, Sobol_indices]
-	        dump(data, output_file)
+		with open(serialization_file, "wb") as output_file:
+			data = [E, Var, Sobol_indices]
+			dump(data, output_file)
 
-	    output_file.close()
+		output_file.close()
 
+	@profile
 	def unserialize_results(self, serialization_file):
 
 	    with open(serialization_file, "rb") as input_file:

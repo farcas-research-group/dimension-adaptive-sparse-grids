@@ -1,7 +1,10 @@
 from .onedim import *
 from .abstract_operation import *
+from line_profiler import profile
 
 class Interpolation(AbstractOperation):
+
+	@profile
 	def __init__(self, dim):
 		
 		self._dim = dim
@@ -14,6 +17,7 @@ class Interpolation(AbstractOperation):
 		self._global_indices_dict   = OrderedDict()
 		self._no_fg_grid_points     = 0
 
+	@profile
 	def _eval_operation_fg(self, curr_func_evals, multiindex, x):
 
 		interp_fg 	 	= 0.
@@ -38,6 +42,7 @@ class Interpolation(AbstractOperation):
 
 		return interp_fg
 
+	@profile
 	def eval_operation_delta(self, curr_multiindex, multiindex_set, x):
 
 		interp_delta = 0.
@@ -57,6 +62,7 @@ class Interpolation(AbstractOperation):
 
 		return interp_delta
 
+	@profile
 	def eval_operation_sg(self, multiindex_set, x):
 
 		interp_sg = 0.
