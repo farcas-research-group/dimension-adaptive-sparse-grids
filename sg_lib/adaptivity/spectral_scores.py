@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class SpectralScores(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tols, init_multiindex, max_level, level_to_nodes, spectral_op_obj):
 		
 		self._dim 				= dim
@@ -31,6 +33,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		self._V = OrderedDict() 
 
+	@profile
 	def __get_local_score(self, curr_multiindex):
 		
 		local_score 	= 0.
@@ -56,6 +59,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		return local_score, local_activations
 
+	@profile
 	def __get_max_score(self):
 
 		max_scores_pos 	= np.where(np.array([local_score == np.amax(list(self._local_error.values())) for local_score in list(self._local_error.values())]))[0]
@@ -78,6 +82,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		return max_key
 
+	@profile
 	def init_adaption(self):
 
 		self._multiindex_set.append(self._init_multiindex)
@@ -93,6 +98,7 @@ class SpectralScores(DimensionAdaptivity):
 		self._local_basis_local[repr(self._init_multiindex)] 	= self._get_local_hierarchical_basis(self._init_multiindex)
 		self._local_basis_global 								= self._get_local_hierarchical_basis(self._init_multiindex)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		local_multiindices = []
@@ -135,6 +141,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		return local_multiindices
 
+	@profile
 	def do_one_adaption_step_postproc(self, curr_multiindices):
 
 		for multiindex in curr_multiindices:
@@ -144,12 +151,14 @@ class SpectralScores(DimensionAdaptivity):
 
 			self._eta += local_score
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
 		if len(list(self._A.values())) == 0 or np.sum(list(self._local_error.values())) == 0. or max_level >= self._max_level:
 			self._stop_adaption = True
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -159,6 +168,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:

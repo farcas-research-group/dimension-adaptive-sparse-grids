@@ -3,62 +3,74 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from pickle import dump, load
 from sg_lib.algebraic.multiindex import *
+from line_profiler import profile
 
 class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 	_dim 				= 0
 	_init_multiindex 	= None
 
+	@profile
 	@property
 	def dim(self):
 
 	    return self._dim
 
+	@profile
 	@property
 	def approx(self):
 
 	    return self._approx
 
+	@profile
 	@property
 	def eta(self):
 
 	    return np.asscalar(self._eta)
 
+	@profile
 	@property
 	def A(self):
 		
 		return self._A
 
+	@profile
 	@property
 	def O(self):
 		
 		return self._O
 
+	@profile
 	@property
 	def local_error(self):
 		
 		return self._local_error
 
+	@profile
 	@property
 	def multiindex_set(self):
 
 		return self._multiindex_set
 
+	@profile
 	@property
 	def stop_adaption(self):
 
 		return self._stop_adaption
 
+	@profile
 	@property
 	def local_basis_local(self):
 		
 		return self._local_basis_local
 
+	@profile
 	@property
 	def local_basis_global(self):
 		
 		return self._local_basis_global
 
+	@profile
 	def _is_O_admissible(self, multiindex):
 
 		admisability 	= 1
@@ -79,12 +91,14 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		return admisability
 
+	@profile
 	def _select_highest_priority_index(self):
 		
 		max_index = max(self._local_error, key=self._local_error.get)
 
 		return max_index
 
+	@profile
 	def _get_no_1D_grid_points(self, level):
 
 		no_points = 0
@@ -104,6 +118,7 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		return no_points
 
+	@profile
 	def _get_local_hierarchical_basis(self, largest_basis):
 
 		temp 			= np.eye(self._dim, dtype=int)
@@ -130,6 +145,7 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		return local_basis
 
+	@profile
 	def _update_local_basis(self, neighbor, local_basis_neighbor):
 
 		neigh_basis 			= self._get_local_hierarchical_basis(local_basis_neighbor)
@@ -151,6 +167,7 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		self._local_basis_local[repr(neighbor)] = local_basis_curr_step
 
+	@profile
 	def serialize_multiindices_adapt(self, new_multiindices, serialization_file):
 
 		with open(serialization_file, "wb") as output_file:
@@ -158,6 +175,7 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		output_file.close()
 
+	@profile
 	def unserialize_multiindices_adapt(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:
@@ -167,31 +185,37 @@ class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 		return new_multiindices
 
+	@profile
 	@abstractmethod
 	def init_adaption(self):
 
 		return 
 
+	@profile
 	@abstractmethod
 	def do_one_adaption_step_preproc(self):
 
 		return
-		
+	
+	@profile
 	@abstractmethod
 	def do_one_adaption_step_postproc(self):
 
 		return
 
+	@profile
 	@abstractmethod
 	def check_termination_criterion(self):
 
 		return
 
+	@profile
 	@abstractmethod
 	def serialize_data(self):
 		
 		return
 
+	@profile
 	@abstractmethod
 	def unserialize_data(self):
 

@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class ErrorWorkRatio(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tol, init_multiindex, max_level):
 		
 		self._dim 				= dim
@@ -26,16 +28,19 @@ class ErrorWorkRatio(DimensionAdaptivity):
 
 		self._stop_adaption = False
 
+	@profile
 	def _get_norm_delta(self, delta):
 
 		return np.abs(delta)
 
+	@profile
 	def _get_local_error_idicator(self, delta, no_points):
 		
 		local_error = self._get_norm_delta(delta)/no_points
 
 		return local_error
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -45,6 +50,7 @@ class ErrorWorkRatio(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:
@@ -53,6 +59,7 @@ class ErrorWorkRatio(DimensionAdaptivity):
 
 		input_file.close()
 
+	@profile
 	def init_adaption(self, init_delta, init_no_points):
 
 		self._key_O 								= -1
@@ -69,6 +76,7 @@ class ErrorWorkRatio(DimensionAdaptivity):
 
 		self._multiindex_set.append(self._init_multiindex)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		local_multiindices = []
@@ -97,6 +105,7 @@ class ErrorWorkRatio(DimensionAdaptivity):
 
 		return local_multiindices
 		
+	@profile
 	def do_one_adaption_step_postproc(self, deltas, no_points):
 
 		for no_points_level, delta_level in zip(no_points, deltas):
@@ -107,6 +116,7 @@ class ErrorWorkRatio(DimensionAdaptivity):
 			self._approx 	+= delta_level
 			self._eta 		+= local_error_indicator
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)

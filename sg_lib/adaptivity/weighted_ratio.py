@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class WeightedRatio(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tol, init_multiindex, max_level, w):
 		
 		self._dim 				= dim
@@ -27,10 +29,12 @@ class WeightedRatio(DimensionAdaptivity):
 
 		self._stop_adaption = False
 
+	@profile
 	def _get_norm_delta(self, delta):
 
 		return np.abs(delta)
 
+	@profile
 	def _get_local_error_idicator(self, init_delta, curr_delta, init_no_points, curr_no_points):
 		
 		local_error = max(self.__w * self._get_norm_delta(curr_delta)/self._get_norm_delta(init_delta), \
@@ -38,6 +42,7 @@ class WeightedRatio(DimensionAdaptivity):
 
 		return local_error
 
+	@profile
 	def init_adaption(self, init_delta, init_no_points):
 
 		self._key_O 								= -1
@@ -56,6 +61,7 @@ class WeightedRatio(DimensionAdaptivity):
 
 		self._multiindex_set.append(self._init_multiindex)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		local_multiindices = []
@@ -84,6 +90,7 @@ class WeightedRatio(DimensionAdaptivity):
 
 		return local_multiindices
 
+	@profile
 	def do_one_adaption_step_postproc(self, deltas, no_points):
 
 		for no_points_level, delta_level in zip(no_points, deltas):
@@ -95,6 +102,7 @@ class WeightedRatio(DimensionAdaptivity):
 			self._approx 	+= delta_level
 			self._eta 		+= local_error_indicator
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)

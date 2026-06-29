@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class DimensionPriorityExprapolation(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tols, init_multiindex, max_level, level_to_nodes):
 		
 		self._dim 				= dim
@@ -30,11 +32,13 @@ class DimensionPriorityExprapolation(DimensionAdaptivity):
 		self._local_basis_global 	= None
 		self._local_basis_local 	= OrderedDict()
 
+	@profile
 	@property
 	def E(self):
 		
 		return self._E
 
+	@profile
 	def init_adaption(self):
 
 		self._key_O = -1
@@ -64,22 +68,26 @@ class DimensionPriorityExprapolation(DimensionAdaptivity):
 			local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in mindex], dtype=int)
 			self._update_local_basis(mindex.tolist(), local_basis_neighbor)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		neighbors_edge_set = Multiindex(self._dim).get_successors_edge_set(self._multiindex_set, list(self._E.values()))
 
 		return neighbors_edge_set
 
+	@profile
 	def do_one_adaption_step_postproc(self):
 
 		pass
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
 		if len(list(self._E.values())) == 0 or max_level >= self._max_level:
 			self._stop_adaption = True
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -89,6 +97,7 @@ class DimensionPriorityExprapolation(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:

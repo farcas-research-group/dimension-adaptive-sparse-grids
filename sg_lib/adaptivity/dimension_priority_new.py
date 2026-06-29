@@ -1,7 +1,9 @@
 from .abstract_adapt_operation import *
+from line_profiler import profile
 
 class DimensionPriority(DimensionAdaptivity):
 
+	@profile
 	def __init__(self, dim, tol, init_multiindex, max_level, level_to_nodes, spectral_op_obj):
 		
 		self._dim 				= dim
@@ -37,11 +39,13 @@ class DimensionPriority(DimensionAdaptivity):
 
 		self._multiindex_bin = Multiindex(self._dim).get_poly_mindex_binary(self._dim)
 
+	@profile
 	@property
 	def E(self):
 		
 		return self._E
 
+	@profile
 	def __find_keys(self, ordered_dict, value):
 
 		key_of_interest = 0
@@ -51,6 +55,7 @@ class DimensionPriority(DimensionAdaptivity):
 
 		return key_of_interest
 
+	@profile
 	def __update_dir_var_max(self):
 
 		unsorted_dir_var_max 	= OrderedDict()
@@ -67,6 +72,7 @@ class DimensionPriority(DimensionAdaptivity):
 		for key in keys:
 			self._local_dir_var_max[key] = unsorted_dir_var_max[key] 
 
+	@profile
 	def update_dir_vars(self, multiindex):
 
 		delta_coeff 	= self.__spectral_op_obj.get_spectral_coeff_delta(multiindex)
@@ -78,6 +84,7 @@ class DimensionPriority(DimensionAdaptivity):
 
 		self._local_dir_var[repr(multiindex.tolist())] = curr_dir_var
 
+	@profile
 	def init_adaption(self):
 
 		self._key_O = -1
@@ -107,6 +114,7 @@ class DimensionPriority(DimensionAdaptivity):
 			local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in mindex], dtype=int)
 			self._update_local_basis(mindex.tolist(), local_basis_neighbor)
 
+	@profile
 	def do_one_adaption_step_preproc(self):
 
 		self.__update_dir_var_max()
@@ -200,6 +208,7 @@ class DimensionPriority(DimensionAdaptivity):
 
 		return candidate_multiindex
 
+	@profile
 	def do_one_adaption_step_postproc(self, candidate_multiindex):
 
 		delta_coeff 	= self.__spectral_op_obj.get_spectral_coeff_delta(candidate_multiindex)
@@ -209,12 +218,14 @@ class DimensionPriority(DimensionAdaptivity):
 
 		# self.__update_dir_var_max()
 
+	@profile
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
 		if len(list(self._E.values())) == 0 or max_level >= self._max_level or self._curr_max_dir_var <= self._tol:
 			self._stop_adaption = True
 
+	@profile
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
@@ -224,6 +235,7 @@ class DimensionPriority(DimensionAdaptivity):
 
 		output_file.close()
 
+	@profile
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:

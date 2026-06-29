@@ -1,9 +1,26 @@
+"""
+Sparse Grid Point Generation via Weighted Leja Sequences
+
+This module implements grid point generation for dimension-adaptive
+sparse grids using weighted Leja sequences. Leja sequences are greedily 
+constructed point sets that maximize stability for polynomial interpolation.
+
+Key Features
+- Weighted Leja point generation with arbitrary porbability densities
+- Hierarchical grid structure for adaptive refinement
+- Efficient caching to avoid recomputation
+- Support for multiple growth strategies (linear, symmetric)
+"""
 import numpy as np
 from scipy.optimize import fmin
+from scipy.optimize import minimize_scalar
 from itertools import product
 from collections import OrderedDict
+from line_profiler import profile
+
 
 class Grid(object):
+	@profile
 	def __init__(self, dim, grid_level, linear_growth_factor, left_bounds, right_bounds, weights):
 		self.__dim 					= dim
 		self.__grid_level 			= grid_level
@@ -13,12 +30,13 @@ class Grid(object):
 		self.__weights 				= weights
 
 		self.__init_level 	= 1
-		self.__machine_eps 	= 7./3 - 4./3 - 1.
+		self.__machine_eps = np.finfo(np.float64).eps
 		self.__test_eval_x 	= (left_bounds + right_bounds)/2.0
 
 		self._max_levels 		= []
 		self._surplus_points 	= {}
-
+	
+	@profile
 	def __get_no_1D_grid_points(self, level):
 
 		no_points = 0
@@ -38,13 +56,16 @@ class Grid(object):
 
 		return no_points
 
+	@profile
 	def __minimize_function(self, func, a, b):
 
 		guess = a + (b - a)/2.0
-		f_min = fmin(func, guess, xtol=self.__machine_eps, maxiter=10000, disp=False)[-1]
+		#f_min = fmin(func, guess, xtol=self.__machine_eps, maxiter=10000, disp=False)[-1]
+		f_min = minimize_scalar(func, bounds=(a, b), options={'xatol': 1e-12})
 
-		return f_min 
+		return f_min.x
 
+	@profile
 	def __get_lleja_poly(self, x, sorted_points, a, b, weight = lambda x: 1.0):
 
 		if (x < a or x > b):
@@ -58,17 +79,21 @@ class Grid(object):
 
 		return poly
 
+	@profile
 	def __get_neg_lleja_poly(self, x, sorted_points, a, b, weight = lambda x: 1.0):
 
 		return (-1.0) * self.__get_lleja_poly(x, sorted_points, a, b, weight)
 
+	@profile
 	def __get_starting_point(self, a, b, weight = lambda x: 1.0):
 
 		neg_weight 		= lambda x: -weight(x)
 		starting_point 	= self.__minimize_function(neg_weight, a, b)
 
 		return starting_point
+	# This funciton isn't being used at all
 
+	@profile	
 	def get_1D_points(self, curr_level, left_bound, right_bound, weight = lambda x: 1.0, eps=1e-14):
 
 		sorted_points 	= []
@@ -161,6 +186,7 @@ class Grid(object):
 
 		return unsorted_points, surplus_points
 
+	@profile	
 	def __get_1D_level_points(self, curr_level, left_bound, right_bound, weight = lambda x: 1.0, eps=1e-14):
 
 		sorted_points 	= []
@@ -208,6 +234,7 @@ class Grid(object):
 
 		return unsorted_points
 
+	@profile
 	def __get_1D_surplus_and_level_points(self, unsorted_points_prev_level, next_level, left_bound, right_bound, \
 													weight = lambda x: 1.0, eps=1e-14):
 
@@ -299,6 +326,7 @@ class Grid(object):
 
 		return unsorted_points, surplus_points
 
+	@profile
 	def __get_indices_all(self, level):
 
 		no_points 	= self.__get_no_1D_grid_points(level)
@@ -306,6 +334,7 @@ class Grid(object):
 
 		return indices_all
 
+	@profile
 	def __get_indices_surpluses_all(self, no_surplus_points, level):
 
 		no_points 			= self.__get_no_1D_grid_points(level)
@@ -313,12 +342,15 @@ class Grid(object):
 
 		return indices_surpluses
 
+	@profile
 	def __tensorize(self, univariate_list):
 		
 		tensorization = np.array(list(product(*univariate_list)))
 
 		return tensorization
 
+
+	@profile
 	def __get_1D_surplus_indices_per_dim(self, max_level, d):
 		
 		all_1D_indices_dim_d 		= []
@@ -336,6 +368,8 @@ class Grid(object):
 
 		return all_1D_indices_dim_d
 
+
+	@profile
 	def __get_all_1D_indices(self, max_level):
 		
 		all_1D_indices 		= []
@@ -360,6 +394,7 @@ class Grid(object):
 
 		return all_1D_indices
 
+	@profile
 	def __get_all_1D_surplus_indices(self, max_level):
 		
 		all_1D_indices 		= []
@@ -384,6 +419,8 @@ class Grid(object):
 
 		return all_1D_indices
 
+	#not being used anywhere else in the code?
+	@profile
 	def __get_all_1D_fg_points(self, max_level, eps=1e-14):
 		
 		all_1D_grid_points 	= []
@@ -437,7 +474,7 @@ class Grid(object):
 
 	# 	return all_1D_grid_points
 
-
+	@profile
 	def __get_all_1D_surplus_points(self, max_level, eps=1e-14):
 		
 		all_1D_grid_points 	= []
@@ -447,7 +484,7 @@ class Grid(object):
 			all_1D_grid_points.append(all_1D_grid_points_dim)
 
 		return all_1D_grid_points
-
+	@profile
 	def __get_all_indices(self, multiindex_set):
 
 		indices = []
@@ -468,7 +505,7 @@ class Grid(object):
 		indices = np.array(indices, dtype=int)
 
 		return indices
-
+	@profile
 	def __get_surplus_indices(self, multiindex_set):
 
 		indices = []
@@ -488,7 +525,7 @@ class Grid(object):
 		indices = np.array(indices, dtype=int)
 
 		return indices
-
+	@profile
 	def __get_no_fg_grid_points_mindex(self, multiindex):
 
 		no_grid_points = 1
@@ -496,7 +533,7 @@ class Grid(object):
 			no_grid_points *= self.__get_no_1D_grid_points(multiindex[d])
 
 		return no_grid_points
-
+	@profile
 	def __get_no_surplus_grid_points_mindex(self, multiindex):
 
 		no_grid_points = 1
@@ -507,7 +544,7 @@ class Grid(object):
 				no_grid_points *= no_surplus_points
 
 		return no_grid_points
-
+	@profile
 	def __get_1D_fg_indices_per_dim(self, max_level, d):
 
 		all_1D_indices_dim_d 		= []
@@ -522,11 +559,12 @@ class Grid(object):
 			all_1D_indices_dim_d.append(indices_all)
 
 		return all_1D_indices_dim_d
-
+		#remove all_1D_indices_dim_d from function not being used. 
+	@profile
 	def get_1D_fg_points_per_dim(self, max_level, d, eps=1e-14):
 		
 		all_1D_grid_points_dim_d 	= []
-		all_1D_indices_dim_d 		= []
+		#all_1D_indices_dim_d 		= []
 		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
 		unsorted_prev_points = self.__get_1D_level_points(unique_levels[0], self.__left_bounds[d], \
@@ -540,9 +578,9 @@ class Grid(object):
 			all_1D_grid_points_dim_d.append(unsorted_prev_points)
 
 		return all_1D_grid_points_dim_d
-
-	def get_1D_surplus_points_per_dim(self, max_level, d, eps=1e-14):
-		
+	@profile
+	def get_1D_surplus_points_per_dim(self, max_level, d, eps=1e-14):  
+		#Ask claude about combining these two functions and if taking eps out of parameter just declare it in the function is faster
 		all_1D_grid_points_dim_d 	= []
 		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
@@ -557,7 +595,8 @@ class Grid(object):
 			all_1D_grid_points_dim_d.append(surplus_level_points)
 
 		return all_1D_grid_points_dim_d
-
+	#also not being used in this code?
+	@profile
 	def get_all_1D_points(self, multiindex_set, eps=1e-14):
 		
 		all_1D_grid_points 	= []
@@ -580,9 +619,10 @@ class Grid(object):
 					else:
 						all_1D_grid_points_dim = self.get_1D_fg_points_per_dim(max_level, d1, eps)
 						all_1D_grid_points.append(all_1D_grid_points_dim)
+      
 
 		return all_1D_grid_points
-
+	@profile
 	def get_sg_surplus_points_multiindex(self, multiindex, eps=1e-14):
 
 		max_level 			= np.max(multiindex)
@@ -608,7 +648,7 @@ class Grid(object):
 		sg_points = self.__tensorize(level_points)
 
 		return sg_points
-
+	@profile
 	def get_all_1D_points_multiindex(self, multiindex, eps=1e-14):
 		
 		all_1D_points_multiindex = []
@@ -620,7 +660,7 @@ class Grid(object):
 		all_1D_points_multiindex = np.array(all_1D_points_multiindex)
 
 		return all_1D_points_multiindex
-
+	@profile
 	def get_fg_points_multiindex(self, multiindex, all_grid_points_1D, eps=1e-14):
 
 		level_points 	= []
@@ -680,7 +720,7 @@ class Grid(object):
 	# 	sg_points = self.__tensorize(level_points)
 
 	# 	return sg_points
-
+	@profile
 	def get_std_sg_surplus_points(self, multiindex_set, eps=1e-14):
 
 		sg_points 	= []
@@ -700,7 +740,7 @@ class Grid(object):
 		sg_points = np.array(sg_points, dtype=np.float64)
 
 		return sg_points
-
+	@profile
 	def map_std_sg_surplus_points(self, std_sg_points, left_stoch_boundary, right_stoch_boundary):
 
 		mapped_sg_points 	= np.zeros(std_sg_points.shape)
@@ -711,7 +751,7 @@ class Grid(object):
 				mapped_sg_points[i, j] = map_0_1_a_b(sg_point[j], j)
 
 		return mapped_sg_points
-
+	@profile
 	def get_no_fg_grid_points(self, multiindex_set):
 
 	    no_grid_points = np.zeros(len(multiindex_set), dtype=int)
@@ -720,7 +760,7 @@ class Grid(object):
 	        no_grid_points[i] = self.__get_no_fg_grid_points_mindex(index)
 
 	    return no_grid_points
-
+	@profile
 	def get_no_surplus_grid_points(self, multiindex_set):
 		
 		no_grid_points = np.zeros(len(multiindex_set), dtype=int)
@@ -729,7 +769,7 @@ class Grid(object):
 		    no_grid_points[i] = self.__get_no_surplus_grid_points_mindex(index)
 
 		return no_grid_points
-
+	@profile
 	def get_local_global_indices(self, multiindex_set):
 
 		global_indices_dict = OrderedDict()
@@ -747,3 +787,7 @@ class Grid(object):
 					global_indices_dict[i] = i
 
 		return global_indices_dict
+	@profile
+	def test_dependency(self):
+		return "dummy"
+  

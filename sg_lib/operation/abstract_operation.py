@@ -4,15 +4,19 @@ from itertools import product
 from collections import OrderedDict
 from pickle import dump, load
 from sg_lib.algebraic.multiindex import *
+from line_profiler import profile
+
 
 class AbstractOperation(object, metaclass=ABCMeta):
     _dim = 0
-
+    
+    @profile
     @property
     def dim(self):
 
         return self._dim
-
+    
+    @profile
     def _get_differences_sign(self, multiindex):
 
         differences_indices = OrderedDict()
@@ -55,6 +59,7 @@ class AbstractOperation(object, metaclass=ABCMeta):
 
         return differences_indices, differences_signs
 
+    @profile
     def _get_multiindex_dict(self, multiindex_set):
 
         multiindex_dict = OrderedDict()
@@ -64,12 +69,14 @@ class AbstractOperation(object, metaclass=ABCMeta):
 
         return multiindex_dict
 
+    @profile
     def update_sg_evals_all_lut(self, sg_point, func_eval):
 
         # sg_point[0] = np.round(sg_point[0], 5)
 
         self._sg_func_evals_all_lut[repr(sg_point.tolist())] = func_eval
 
+    @profile
     def update_sg_evals_multiindex_lut(self, multiindex, grid_obj):
 
         sg_points = grid_obj.get_fg_points_multiindex(multiindex, self._all_grid_points_1D)
@@ -92,11 +99,13 @@ class AbstractOperation(object, metaclass=ABCMeta):
 
         self._fg_func_evals_multiindex_lut[repr(multiindex.tolist())] = func_evals
     
+    @profile
     def reset_datastructures(self):
 
         self._sg_func_evals_all_lut         = OrderedDict()  
         self._sg_func_evals_multiindex_lut  = OrderedDict()  
 
+    @profile
     def serialize_data(self, serialization_file):
         
         with open(serialization_file, "wb") as output_file:
@@ -104,6 +113,7 @@ class AbstractOperation(object, metaclass=ABCMeta):
 
         output_file.close()
 
+    @profile
     def unserialize_data(self, serialization_file):
 
         data = []
@@ -117,17 +127,20 @@ class AbstractOperation(object, metaclass=ABCMeta):
         input_file.close() 
 
         self._sg_func_evals_all_lut = data[-1]
-        
+
+    @profile   
     @abstractmethod
     def _eval_operation_fg(self):
         
         return
 
+    @profile
     @abstractmethod
     def eval_operation_delta(self):
         
         return 
- 
+
+    @profile
     @abstractmethod
     def eval_operation_sg(self):
         

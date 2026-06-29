@@ -2,8 +2,11 @@ from sg_lib.grid.grid import *
 from sg_lib.algebraic.multiindex import *
 from sg_lib.operation.interpolation_to_spectral import *
 from sg_lib.adaptivity.spectral_scores import *
+from line_profiler import profile
+
 
 # high-fidelity model for this test
+@profile
 def hi_fi_model(x):
 	test = np.cos(np.pi + 1.0*x[0] + 0.55*x[1] + 0.8*x[2] + 0.1*x[3]) + 1.0
 

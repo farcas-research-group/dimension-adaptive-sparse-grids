@@ -1,9 +1,11 @@
 import numpy as np
 from collections import OrderedDict
 from itertools import product
+from line_profiler import profile
+
 
 class Multiindex(object):
-	
+	@profile
 	def __init__(self, dim):
 		self._dim = dim
 
@@ -12,11 +14,11 @@ class Multiindex(object):
 		self.__poly_prev_pos 		= 0
 
 		self.__poly_mindex_dict[self.__poly_mindex_dict_key] = [0 for d in range(dim)]
-
+	@profile
 	def __get_l1_norm(self, vec):
 		
 		return np.sum(vec)
-
+	@profile
 	def is_admissible(self, multiindex_set, multiindex):
 
 		admisability = 1
@@ -40,7 +42,7 @@ class Multiindex(object):
 					break
 
 		return admisability
-
+	@profile
 	def get_successors(self, multiindex):
 		
 		successors = np.zeros((self._dim, self._dim), dtype=int)
@@ -51,7 +53,7 @@ class Multiindex(object):
 			successors[i, :]	= multiindex + temp
 
 		return successors
-
+	@profile
 	def get_successors_with_history(self, multiindex, multiindex_set):
 		
 		multiindex_set 			= [mindex.tolist() for mindex in multiindex_set]
@@ -68,7 +70,7 @@ class Multiindex(object):
 		successors_with_history = np.array(successors_with_history, dtype=int)
 
 		return successors_with_history
-
+	@profile
 	def get_successors_edge_set(self, multiindex_set, multiindex_set_edge):
 		
 		multiindex_set_edge = [multiindex.tolist() for multiindex in multiindex_set_edge]
@@ -87,7 +89,7 @@ class Multiindex(object):
 		successors_edge_set = np.array(successors_edge_set, dtype=int)
 
 		return successors_edge_set
-
+	@profile
 	def get_std_total_degree_mindex_level(self, level):
 		
 		multiindex_set = []
@@ -122,7 +124,7 @@ class Multiindex(object):
 		multiindex_set = np.array(multiindex_set, dtype=int)
 
 		return multiindex_set
-
+	@profile
 	def get_std_total_degree_mindex(self, level):
 		
 		multiindex_set = []
@@ -155,7 +157,7 @@ class Multiindex(object):
 		multiindex_set = np.array(multiindex_set, dtype=int)
 
 		return multiindex_set
-
+	@profile
 	def get_poly_mindex(self, level):
 
 		multiindex_set = []
@@ -185,7 +187,7 @@ class Multiindex(object):
 		multiindex_set = np.array(multiindex_set, dtype=int)
 
 		return multiindex_set
-
+	@profile
 	def get_poly_mindex_binary(self, level):
 
 		multiindex_set = []
@@ -215,7 +217,7 @@ class Multiindex(object):
 		multiindex_set = np.array(multiindex_set, dtype=int)
 
 		return multiindex_set[1:]
-
+	@profile
 	def get_poly_degs(self, max_degs):
 
 		multiindex_set = []

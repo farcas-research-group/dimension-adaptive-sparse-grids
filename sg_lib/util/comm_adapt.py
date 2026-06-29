@@ -1,8 +1,10 @@
 import numpy as np
 from math import trunc
+from line_profiler import profile
 
 class CommAdapt(object):
 
+	@profile
 	def __truncate(self, number, digits):
 
 		stepper = pow(10.0, digits)
@@ -10,6 +12,7 @@ class CommAdapt(object):
 
 		return res
 
+	@profile
 	def read_real_part(self, file_name):
 
 		real_part = 0.
@@ -29,7 +32,7 @@ class CommAdapt(object):
 
 		return real_part
 
-
+	@profile
 	def read_imag_part(self, file_name):
 
 		imag_part = 0.
@@ -49,6 +52,7 @@ class CommAdapt(object):
 
 		return imag_part
 
+	@profile
 	def write_sg_data(self, file_name, sg_data):
 
 		with open(file_name, "w") as file:
@@ -67,6 +71,7 @@ class CommAdapt(object):
 
 		file.close
 
+	@profile
 	def write_is_terminated(self, file_name, is_not_terminated):
 		
 		is_not_terminated = str(is_not_terminated).lower()
