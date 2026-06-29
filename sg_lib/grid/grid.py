@@ -60,8 +60,9 @@ class Grid(object):
 	def __minimize_function(self, func, a, b):
 
 		guess = a + (b - a)/2.0
-		#f_min = fmin(func, guess, xtol=self.__machine_eps, maxiter=10000, disp=False)[-1]
-		f_min = minimize_scalar(func, bounds=(a, b), options={'xatol': 1e-12})
+		#f_min = fmin(func, guess, xtol=self.__machine_eps, maxiter=10000, disp=False)[-1] #original
+		#f_min = fmin(func, guess, xtol=1e-12, ftol=1e-12, maxiter=10000, disp=False)[-1] #first solution 
+		f_min = minimize_scalar(func, bounds=(a, b), options={'xatol': 1e-12}) #second solution
 
 		return f_min.x
 
